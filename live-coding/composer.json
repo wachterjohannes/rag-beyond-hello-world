@@ -1,0 +1,13 @@
+{
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "symfony/ai-platform": "dev-main as 0.6.99",
+        "symfony/ai-store": "dev-main as 0.6.99",
+        "symfony/ai-sqlite-store": "dev-main as 0.6.99",
+        "symfony/ai-ollama-platform": "dev-main as 0.6.99",
+        "symfony/ai-hugging-face-platform": "dev-main as 0.6.99",
+        "symfony/event-dispatcher": "^8.0",
+        "symfony/http-client": "^8.0"
+    }
+}
