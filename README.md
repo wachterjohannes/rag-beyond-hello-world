@@ -32,6 +32,10 @@ Each step adds one technique to `01/query.php`:
 | 03 | Hybrid Retrieval | `semanticRatio: 0.5` combines vector + full-text (RRF) |
 | 04 | Reranking | `PostQueryEvent` + cross-encoder rescores candidates |
 
+## Status
+
+> **Note:** Hybrid retrieval (step 03) requires [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) which is not yet merged.
+
 ## Running the Demo
 
 ### Requirements
