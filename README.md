@@ -34,7 +34,7 @@ Each step adds one technique to `01/query.php`:
 
 ## Status
 
-> **Note:** Hybrid retrieval (step 03) requires [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) which is not yet merged.
+> **Note:** Hybrid retrieval (step 03) uses Reciprocal Rank Fusion in the SQLite store, added in [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) (merged 2026-04-08). A recent `symfony/ai` (dev-main or a release that includes it) is required.
 
 ## Running the Demo
 
