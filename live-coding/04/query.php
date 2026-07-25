@@ -9,7 +9,7 @@
  * Outdated docs (SwiftMailer, mail()) drop to the bottom.
  */
 
-[$ollamaPlatform, $huggingFacePlatform, $store] = require __DIR__ . '/../bootstrap.php';
+[$platform, $store] = require __DIR__ . '/../bootstrap.php';
 require __DIR__ . '/../helpers.php';
 
 use Symfony\AI\Platform\Message\Message;
@@ -31,7 +31,7 @@ echo "Original Query: \"{$query}\"\n\n";
 $dispatcher = new EventDispatcher();
 
 // 1. PreQueryEvent: Query Analysis / Rewriting
-$dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) use ($ollamaPlatform) {
+$dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) use ($platform) {
     $messages = new MessageBag(
         Message::forSystem(<<<'PROMPT'
             You are a query rewriter for a Symfony documentation search engine.
@@ -50,7 +50,7 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
         Message::ofUser($event->getQuery()),
     );
 
-    $rewritten = $ollamaPlatform->invoke(LLM_MODEL, $messages)->asText();
+    $rewritten = $platform->invoke(LLM_MODEL, $messages)->asText();
 
     echo "Rewritten Query: \"{$rewritten}\"\n\n";
 
@@ -58,11 +58,11 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
 });
 
 // 2. PostQueryEvent: Cross-Encoder Reranking
-$reranker = new Reranker($huggingFacePlatform, RERANKER_MODEL);
+$reranker = new Reranker($platform, RERANKER_MODEL);
 $dispatcher->addListener(PostQueryEvent::class, new RerankerListener($reranker, topK: 5));
 
 // Full pipeline: Query Analysis → Hybrid Retrieval → Reranking
-$vectorizer = new Vectorizer($huggingFacePlatform, EMBEDDING_MODEL);
+$vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
 $retriever = new Retriever($store, $vectorizer, $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 10, // Fetch more candidates for the reranker
@@ -80,6 +80,6 @@ $messages = new MessageBag(
     Message::ofUser("Context:\n{$context}\n\nQuestion: {$query}"),
 );
 
-$response = $ollamaPlatform->invoke(LLM_MODEL, $messages);
+$response = $platform->invoke(LLM_MODEL, $messages);
 
 echo $response->asText() . "\n";

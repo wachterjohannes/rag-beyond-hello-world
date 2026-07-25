@@ -7,7 +7,7 @@
  * This is where most tutorials stop – and where most real-world RAG pipelines break.
  */
 
-[$ollamaPlatform, $huggingFacePlatform, $store] = require __DIR__ . '/../bootstrap.php';
+[$platform, $store] = require __DIR__ . '/../bootstrap.php';
 require __DIR__ . '/../helpers.php';
 
 use Symfony\AI\Platform\Message\Message;
@@ -25,7 +25,7 @@ echo "Query: \"{$query}\"\n\n";
 $dispatcher = new EventDispatcher();
 
 // Retriever with just vectorizer – no query rewriting, no reranking
-$vectorizer = new Vectorizer($huggingFacePlatform, EMBEDDING_MODEL);
+$vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
 $retriever = new Retriever($store, $vectorizer, $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
@@ -42,6 +42,6 @@ $messages = new MessageBag(
     Message::forSystem('You are a helpful assistant. Answer the user\'s question based ONLY on the provided context. If the context contains conflicting information from different versions, mention all of them.'),
     Message::ofUser("Context:\n{$context}\n\nQuestion: {$query}"),
 );
-$response = $ollamaPlatform->invoke(LLM_MODEL, $messages);
+$response = $platform->invoke(LLM_MODEL, $messages);
 
 echo $response->asText() . "\n";
