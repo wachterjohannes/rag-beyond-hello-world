@@ -53,7 +53,9 @@ $versionTagger = new class implements TransformerInterface {
     }
 };
 
-// Prepare indexing pipeline
+// Prepare indexing pipeline. Cohere embeds documents and search queries in different modes;
+// `search_document` is the bridge's default, so the index side needs nothing extra here.
+// The query side does: see forQueries() in helpers.php.
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
 $processor = new DocumentProcessor($vectorizer, $store, filters: [$junkFilter], transformers: [$versionTagger]);
 $loader = new RstToctreeLoader(logger: $logger);
