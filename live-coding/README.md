@@ -107,3 +107,16 @@ about your version preference — a good lead-in to metadata filtering as the ne
 | Reranking | `rerank-v3.5` | Cohere |
 
 All three run through the same `symfony/ai` Cohere platform, so swapping the provider is a one-line change in `bootstrap.php` — a nice illustration that a common interface lets you move providers without touching the pipeline.
+
+### Document mode vs query mode
+
+Cohere's embedding models are asymmetric: the same text is embedded differently depending on
+whether it is a stored document or a search query, so that short questions land next to the
+longer passages that answer them. Both sides have to use the matching mode, otherwise the two
+sets of vectors are subtly misaligned.
+
+`index.php` gets this for free, because `search_document` is the bridge's default. Queries do
+not: `Retriever::createQuery()` calls `$vectorizer->vectorize($query)` without options
+(`symfony/ai-store` v0.12.0), so the mode cannot be passed per call. The steps therefore wrap
+the vectorizer in `forQueries()` (see `helpers.php`), which pins `search_query` for the query
+side.

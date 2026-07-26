@@ -27,8 +27,10 @@ $dispatcher = new EventDispatcher();
 // Retriever with just vectorizer – no query rewriting, no reranking.
 // vectorOnly() keeps this genuinely pure vector search: the store also supports hybrid
 // queries, and the Retriever would prefer those even at semanticRatio 1.0 (see helpers.php).
+// forQueries() embeds the question in Cohere's search_query mode, the counterpart to the
+// search_document mode the indexer used – same model, but the two sides have to match.
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever(vectorOnly($store), $vectorizer, $dispatcher);
+$retriever = new Retriever(vectorOnly($store), forQueries($vectorizer), $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
 ]));

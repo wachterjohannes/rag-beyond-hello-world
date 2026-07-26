@@ -4,7 +4,11 @@
  * Shared helpers for the live-coding demo.
  */
 
+use Symfony\AI\Platform\Bridge\Cohere\InputType;
+use Symfony\AI\Platform\Vector\Vector;
+use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
 use Symfony\AI\Store\Document\VectorDocument;
+use Symfony\AI\Store\Document\VectorizerInterface;
 use Symfony\AI\Store\Query\HybridQuery;
 use Symfony\AI\Store\Query\QueryInterface;
 use Symfony\AI\Store\StoreInterface;
@@ -47,6 +51,33 @@ function vectorOnly(StoreInterface $store): StoreInterface
         public function supports(string $queryClass): bool
         {
             return HybridQuery::class !== $queryClass && $this->inner->supports($queryClass);
+        }
+    };
+}
+
+/**
+ * Wraps a vectorizer so the query side is embedded in Cohere's `search_query` mode.
+ *
+ * Cohere's embedding models are asymmetric: a document and a search query are embedded in
+ * different modes so that short questions land next to the longer passages that answer them.
+ * `index.php` embeds documents and gets the right mode for free, because `search_document` is
+ * the bridge's default. Queries do not: `Retriever::createQuery()` calls
+ * `$vectorizer->vectorize($query)` with no options (symfony/ai-store v0.12.0), so there is no
+ * way to pass the mode per call, and the query would be embedded as if it were a document.
+ *
+ * Pinning the mode on the vectorizer itself is the way around that. Explicit options still win,
+ * so a caller can override it.
+ */
+function forQueries(VectorizerInterface $vectorizer): VectorizerInterface
+{
+    return new class($vectorizer) implements VectorizerInterface {
+        public function __construct(private readonly VectorizerInterface $inner)
+        {
+        }
+
+        public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
+        {
+            return $this->inner->vectorize($values, $options + ['input_type' => InputType::SearchQuery]);
         }
     };
 }

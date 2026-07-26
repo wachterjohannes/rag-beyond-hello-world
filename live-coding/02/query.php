@@ -54,7 +54,7 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
 
 // Still pure vector search (see vectorOnly() in helpers.php) – but with a better query
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever(vectorOnly($store), $vectorizer, $dispatcher);
+$retriever = new Retriever(vectorOnly($store), forQueries($vectorizer), $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
 ]));

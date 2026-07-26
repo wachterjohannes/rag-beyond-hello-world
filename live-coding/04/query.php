@@ -65,7 +65,7 @@ $dispatcher->addListener(PostQueryEvent::class, new RerankerListener($reranker, 
 
 // Full pipeline: Query Analysis → Hybrid Retrieval → Reranking
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever($store, $vectorizer, $dispatcher);
+$retriever = new Retriever($store, forQueries($vectorizer), $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 10, // Fetch more candidates for the reranker
     'semanticRatio' => 0.5, // Hybrid search

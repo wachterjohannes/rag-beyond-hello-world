@@ -32,7 +32,7 @@ $dispatcher = new EventDispatcher();
 
 // NOW: Hybrid retrieval – vector + full-text search combined
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever($store, $vectorizer, $dispatcher);
+$retriever = new Retriever($store, forQueries($vectorizer), $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
     'semanticRatio' => 0.5, // 50% semantic + 50% keyword = hybrid search
