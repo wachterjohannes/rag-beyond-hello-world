@@ -52,16 +52,15 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
     $event->setQuery($rewritten);
 });
 
-// Still pure vector search – but with a better query
+// Still pure vector search (see vectorOnly() in helpers.php) – but with a better query
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever($store, $vectorizer, $dispatcher);
+$retriever = new Retriever(vectorOnly($store), $vectorizer, $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
-    'semanticRatio' => 1.0, // Still pure vector search
 ]));
 
 echo "--- Retrieved Documents ---\n\n";
-$context = displayResults($results);
+$context = displayResults($results, 'cosine distance, lower = closer');
 
 // Generate answer with LLM
 echo "--- Generated Answer ---\n\n";

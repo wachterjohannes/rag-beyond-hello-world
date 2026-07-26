@@ -24,16 +24,17 @@ echo "Query: \"{$query}\"\n\n";
 // Set up event dispatcher
 $dispatcher = new EventDispatcher();
 
-// Retriever with just vectorizer – no query rewriting, no reranking
+// Retriever with just vectorizer – no query rewriting, no reranking.
+// vectorOnly() keeps this genuinely pure vector search: the store also supports hybrid
+// queries, and the Retriever would prefer those even at semanticRatio 1.0 (see helpers.php).
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$retriever = new Retriever($store, $vectorizer, $dispatcher);
+$retriever = new Retriever(vectorOnly($store), $vectorizer, $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
-    'semanticRatio' => 1.0, // 100% semantic = pure vector search
 ]));
 
 echo "--- Retrieved Documents ---\n\n";
-$context = displayResults($results);
+$context = displayResults($results, 'cosine distance, lower = closer');
 
 // Generate answer with LLM
 echo "--- Generated Answer ---\n\n";

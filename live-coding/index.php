@@ -3,11 +3,40 @@
 [$platform, $store, $logger] = require __DIR__ . '/bootstrap.php';
 
 use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
+use Symfony\AI\Store\Document\FilterInterface;
 use Symfony\AI\Store\Document\Loader\RstToctreeLoader;
 use Symfony\AI\Store\Document\TransformerInterface;
 use Symfony\AI\Store\Document\Vectorizer;
 use Symfony\AI\Store\Indexer\DocumentProcessor;
 use Symfony\AI\Store\Indexer\SourceIndexer;
+
+// The RST loader splits on section length, which cuts long code blocks into fragments whose
+// "section" is a stray brace or two. Those chunks carry no retrievable meaning but happily
+// land in the top 5 and end up in the LLM's context. Filters run before embedding, so
+// dropping them here also saves the embedding calls.
+$junkFilter = new class implements FilterInterface {
+    private const MIN_LENGTH = 80;
+
+    public function filter(iterable $documents, array $options = []): iterable
+    {
+        foreach ($documents as $document) {
+            $content = trim($document->getContent());
+            $title = trim($document->getMetadata()->getTitle() ?? '');
+
+            // Needs a real word in the title and enough prose to be worth embedding.
+            if (!preg_match('/\p{L}{3}/u', $title) || mb_strlen($content) < self::MIN_LENGTH) {
+                continue;
+            }
+
+            // Headings that are really template or code lines, e.g. "Welcome {{ email.toName }}!".
+            if (preg_match('/\{\{|\{%|<\?php/', $title)) {
+                continue;
+            }
+
+            yield $document;
+        }
+    }
+};
 
 // Transformer that prepends the Symfony version to each document's content
 // so that vector search can distinguish between versions.
@@ -26,7 +55,7 @@ $versionTagger = new class implements TransformerInterface {
 
 // Prepare indexing pipeline
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
-$processor = new DocumentProcessor($vectorizer, $store, transformers: [$versionTagger]);
+$processor = new DocumentProcessor($vectorizer, $store, filters: [$junkFilter], transformers: [$versionTagger]);
 $loader = new RstToctreeLoader(logger: $logger);
 $indexer = new SourceIndexer($loader, $processor);
 

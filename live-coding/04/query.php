@@ -50,11 +50,13 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
         Message::ofUser($event->getQuery()),
     );
 
+    $original = $event->getQuery();
     $rewritten = $platform->invoke(LLM_MODEL, $messages)->asText();
 
     echo "Rewritten Query: \"{$rewritten}\"\n\n";
 
-    $event->setQuery($rewritten);
+    // Keep the original terms for the full-text half of the hybrid query (see step 3).
+    $event->setQuery(trim($rewritten . ' ' . $original));
 });
 
 // 2. PostQueryEvent: Cross-Encoder Reranking
@@ -70,7 +72,7 @@ $results = iterator_to_array($retriever->retrieve($query, [
 ]));
 
 echo "--- Retrieved Documents (Hybrid + Reranked) ---\n\n";
-$context = displayResults($results);
+$context = displayResults($results, 'reranker relevance, higher = better');
 
 // Generate answer with LLM
 echo "--- Generated Answer ---\n\n";

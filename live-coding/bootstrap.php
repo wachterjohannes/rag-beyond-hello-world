@@ -11,10 +11,31 @@ const RERANKER_MODEL = 'rerank-v3.5';
 use Psr\Log\AbstractLogger;
 use Symfony\AI\Platform\Bridge\Cohere\Factory as CohereFactory;
 use Symfony\AI\Store\Bridge\Sqlite\Store;
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpClient\HttpClient;
 
+// Loads .env, then .env.local on top of it. Put your key in .env.local (git-ignored).
+// Already-exported environment variables always win, so `COHERE_API_KEY=... php index.php` still works.
+(new Dotenv())->loadEnv(__DIR__ . '/.env');
+
+$apiKey = $_SERVER['COHERE_API_KEY'] ?? '';
+
+if ('' === $apiKey) {
+    fwrite(STDERR, <<<TEXT
+        No COHERE_API_KEY found.
+
+        Copy .env.local.dist to .env.local and add your key from
+        https://dashboard.cohere.com/api-keys:
+
+            cp .env.local.dist .env.local
+
+        TEXT);
+
+    exit(1);
+}
+
 $platform = CohereFactory::createPlatform(
-    $_SERVER['COHERE_API_KEY'] ?? '',
+    $apiKey,
     HttpClient::create(['timeout' => 120]),
 );
 

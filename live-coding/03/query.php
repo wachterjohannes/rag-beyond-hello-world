@@ -14,43 +14,21 @@ require __DIR__ . '/../helpers.php';
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Store\Document\Vectorizer;
-use Symfony\AI\Store\Event\PreQueryEvent;
 use Symfony\AI\Store\Retriever;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 $query = $argv[1] ?? 'send email';
 
 echo "=== Enhanced RAG: Hybrid Retrieval ===\n\n";
-echo "Original Query: \"{$query}\"\n\n";
+echo "Query: \"{$query}\"\n\n";
 
-// Set up event dispatcher with query analysis listener
 $dispatcher = new EventDispatcher();
 
-$dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) use ($platform) {
-    $messages = new MessageBag(
-        Message::forSystem(<<<'PROMPT'
-            You are a query rewriter for a Symfony documentation search engine.
-            Rewrite the user's query to improve retrieval quality.
-
-            Rules:
-            - Expand abbreviations (e.g. "auth" → "authentication")
-            - Add the framework name "Symfony" if not present
-            - The system is built with Symfony 8.0 – prefer this version
-            - Add version context if missing (default to Symfony 8.0)
-            - Fix typos and normalize terminology
-            - Keep it concise – this is a search query, not a question
-
-            Respond with ONLY the rewritten query, nothing else.
-            PROMPT),
-        Message::ofUser($event->getQuery()),
-    );
-
-    $rewritten = $platform->invoke(LLM_MODEL, $messages)->asText();
-
-    echo "Rewritten Query: \"{$rewritten}\"\n\n";
-
-    $event->setQuery($rewritten);
-});
+// Deliberately no query rewriting here: this step changes exactly one thing versus step 1.
+// Rewriting also works against full-text search – the store ORs every term together, so
+// turning "Mailer" into "Symfony 8.0 mailer service configuration and usage" buries the one
+// exact keyword under eight loose ones. Step 4 brings the rewriter back, where the reranker
+// can clean up after it.
 
 // NOW: Hybrid retrieval – vector + full-text search combined
 $vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
@@ -61,7 +39,7 @@ $results = iterator_to_array($retriever->retrieve($query, [
 ]));
 
 echo "--- Retrieved Documents (Hybrid: Vector + Full-Text) ---\n\n";
-$context = displayResults($results);
+$context = displayResults($results, 'RRF rank score – rank-based, not similarity');
 
 // Generate answer with LLM
 echo "--- Generated Answer ---\n\n";
