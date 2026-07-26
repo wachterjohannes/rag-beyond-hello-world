@@ -7,6 +7,7 @@
         "symfony/ai-store": "^0.12",
         "symfony/ai-sqlite-store": "^0.12",
         "symfony/event-dispatcher": "^8.0",
-        "symfony/http-client": "^8.0"
+        "symfony/http-client": "^8.0",
+        "symfony/dotenv": "^8.1"
     }
 }

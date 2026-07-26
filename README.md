@@ -25,12 +25,20 @@ live-coding/
 
 Each step adds one technique to `01/query.php`:
 
-| Step | Technique | Key change |
-|------|-----------|------------|
-| 01 | Naive RAG | Baseline: embed + retrieve |
-| 02 | Query Analysis | `PreQueryEvent` rewrites the query with an LLM |
-| 03 | Hybrid Retrieval | `semanticRatio: 0.5` combines vector + full-text (RRF) |
-| 04 | Reranking | `PostQueryEvent` + cross-encoder rescores candidates |
+| Step | Technique | Key change | Score shown |
+|------|-----------|------------|-------------|
+| 01 | Naive RAG | Baseline: embed + retrieve | cosine distance (lower = closer) |
+| 02 | Query Analysis | `PreQueryEvent` rewrites the query with an LLM | cosine distance |
+| 03 | Hybrid Retrieval | `semanticRatio: 0.5` combines vector + full-text (RRF) | RRF rank score |
+| 04 | Reranking | `PostQueryEvent` + cross-encoder rescores candidates | reranker relevance (higher = better) |
+
+The three modes report scores on different scales, so compare numbers *within* a step, never
+across steps. RRF scores in particular are rank-based (`1/(60+rank)`), so they are always tiny
+and nearly identical regardless of retrieval quality.
+
+Step 03 deliberately drops the query rewriting from step 02. Full-text search ORs every term
+together, so rewriting `"Mailer"` into a longer phrase buries the exact keyword the step exists
+to demonstrate. Step 04 brings the rewriter back, where the reranker can clean up after it.
 
 ## Status
 
@@ -48,7 +56,11 @@ The demo runs on a single provider: **Cohere** supplies the chat model, the embe
 ```bash
 cd live-coding
 composer install
-export COHERE_API_KEY=...
+
+# Add your Cohere key (from https://dashboard.cohere.com/api-keys).
+# .env.local is git-ignored, so the key stays out of the repo.
+cp .env.local.dist .env.local
+# then edit .env.local and set COHERE_API_KEY=...
 
 # Index the docs (once). Embeddings are Cohere's, so start from a fresh
 # symfony_docs.sqlite if you previously indexed with another provider.
