@@ -5,20 +5,19 @@ A progressive RAG pipeline built on [symfony/ai](https://github.com/symfony/ai),
 ## Requirements
 
 - PHP 8.2+
-- [Ollama](https://ollama.com) running locally at `http://127.0.0.1:11434` with `kimi-k2.5:cloud`
-- HuggingFace API key with Inference API access
+- A [Cohere](https://cohere.com) API key (covers the LLM, embeddings and reranker)
 
 ## Setup
 
 ```bash
 composer install
-export HUGGINGFACE_API_KEY=hf_...
+export COHERE_API_KEY=...
 
 # Clone and index Symfony docs (4.4, 5.4, 7.4, 8.0) — takes a few minutes
 php index.php
 ```
 
-The indexer clones the Symfony docs repo for each version, embeds all pages using `BAAI/bge-base-en-v1.5` via HuggingFace, and stores them in a local SQLite database.
+The indexer clones the Symfony docs repo for each version, embeds all pages using Cohere's `embed-english-v3.0`, and stores them in a local SQLite database.
 
 ## Steps
 
@@ -54,7 +53,7 @@ Exact keyword matches like `"Mailer"` now surface alongside semantic results —
 
 ### Step 4 — Reranking
 
-Adds a `PostQueryEvent` listener with a cross-encoder reranker (`BAAI/bge-reranker-v2-m3`). Fetches a larger candidate pool (10 docs), then rescores all candidates by reading query and document together — much more accurate than embedding similarity alone.
+Adds a `PostQueryEvent` listener with a cross-encoder reranker (Cohere `rerank-v3.5`). Fetches a larger candidate pool (10 docs), then rescores all candidates by reading query and document together — much more accurate than embedding similarity alone.
 
 ```bash
 php 04/query.php "send email"
@@ -66,6 +65,8 @@ The most relevant document jumps to #1 with a high relevance score. The reranker
 
 | Purpose | Model | Provider |
 |---------|-------|----------|
-| LLM (query rewriting + answering) | `kimi-k2.5:cloud` | Ollama |
-| Embeddings | `BAAI/bge-base-en-v1.5` | HuggingFace Inference API |
-| Reranking | `BAAI/bge-reranker-v2-m3` | HuggingFace Inference API |
+| LLM (query rewriting + answering) | `command-a-03-2025` | Cohere |
+| Embeddings | `embed-english-v3.0` | Cohere |
+| Reranking | `rerank-v3.5` | Cohere |
+
+All three run through the same `symfony/ai` Cohere platform, so swapping the provider is a one-line change in `bootstrap.php` — a nice illustration that a common interface lets you move providers without touching the pipeline.

@@ -8,7 +8,7 @@
  * we get both semantic understanding AND keyword precision.
  */
 
-[$ollamaPlatform, $huggingFacePlatform, $store] = require __DIR__ . '/../bootstrap.php';
+[$platform, $store] = require __DIR__ . '/../bootstrap.php';
 require __DIR__ . '/../helpers.php';
 
 use Symfony\AI\Platform\Message\Message;
@@ -26,7 +26,7 @@ echo "Original Query: \"{$query}\"\n\n";
 // Set up event dispatcher with query analysis listener
 $dispatcher = new EventDispatcher();
 
-$dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) use ($ollamaPlatform) {
+$dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) use ($platform) {
     $messages = new MessageBag(
         Message::forSystem(<<<'PROMPT'
             You are a query rewriter for a Symfony documentation search engine.
@@ -45,7 +45,7 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
         Message::ofUser($event->getQuery()),
     );
 
-    $rewritten = $ollamaPlatform->invoke(LLM_MODEL, $messages)->asText();
+    $rewritten = $platform->invoke(LLM_MODEL, $messages)->asText();
 
     echo "Rewritten Query: \"{$rewritten}\"\n\n";
 
@@ -53,7 +53,7 @@ $dispatcher->addListener(PreQueryEvent::class, function (PreQueryEvent $event) u
 });
 
 // NOW: Hybrid retrieval – vector + full-text search combined
-$vectorizer = new Vectorizer($huggingFacePlatform, EMBEDDING_MODEL);
+$vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
 $retriever = new Retriever($store, $vectorizer, $dispatcher);
 $results = iterator_to_array($retriever->retrieve($query, [
     'maxItems' => 5,
@@ -71,6 +71,6 @@ $messages = new MessageBag(
     Message::ofUser("Context:\n{$context}\n\nQuestion: {$query}"),
 );
 
-$response = $ollamaPlatform->invoke(LLM_MODEL, $messages);
+$response = $platform->invoke(LLM_MODEL, $messages);
 
 echo $response->asText() . "\n";

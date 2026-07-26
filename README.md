@@ -12,7 +12,7 @@ From naive vector search to a production-ready RAG pipeline — step by step, li
 index.html         # Slide deck (Marp)
 assets/            # Slide images
 live-coding/
-  bootstrap.php    # Shared setup: Ollama, HuggingFace, SQLite store
+  bootstrap.php    # Shared setup: Cohere platform (LLM + embeddings + reranker), SQLite store
   helpers.php      # Display helpers
   index.php        # Indexer – loads Symfony docs into SQLite
   01/query.php     # Step 1: Naive RAG – pure vector search
@@ -34,22 +34,24 @@ Each step adds one technique to `01/query.php`:
 
 ## Status
 
-> **Note:** Hybrid retrieval (step 03) requires [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) which is not yet merged.
+> **Note:** Hybrid retrieval (step 03) uses Reciprocal Rank Fusion in the SQLite store, added in [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) (merged 2026-04-08). It ships in the pinned `symfony/ai ^0.12`, so no extra setup is needed.
 
 ## Running the Demo
+
+The demo runs on a single provider: **Cohere** supplies the chat model, the embeddings and the reranker, so all you need is one `COHERE_API_KEY`.
 
 ### Requirements
 
 - PHP 8.2+
-- [Ollama](https://ollama.com) running locally with `kimi-k2.5:cloud`
-- HuggingFace API key
+- A [Cohere](https://cohere.com) API key
 
 ```bash
 cd live-coding
 composer install
-export HUGGINGFACE_API_KEY=hf_...
+export COHERE_API_KEY=...
 
-# Index the docs (once)
+# Index the docs (once). Embeddings are Cohere's, so start from a fresh
+# symfony_docs.sqlite if you previously indexed with another provider.
 php index.php
 
 # Run each step

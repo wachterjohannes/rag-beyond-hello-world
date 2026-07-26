@@ -1,6 +1,6 @@
 <?php
 
-[$ollamaPlatform, $huggingFacePlatform, $store, $logger] = require __DIR__ . '/bootstrap.php';
+[$platform, $store, $logger] = require __DIR__ . '/bootstrap.php';
 
 use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
 use Symfony\AI\Store\Document\Loader\RstToctreeLoader;
@@ -25,7 +25,7 @@ $versionTagger = new class implements TransformerInterface {
 };
 
 // Prepare indexing pipeline
-$vectorizer = new Vectorizer($huggingFacePlatform, EMBEDDING_MODEL);
+$vectorizer = new Vectorizer($platform, EMBEDDING_MODEL);
 $processor = new DocumentProcessor($vectorizer, $store, transformers: [$versionTagger]);
 $loader = new RstToctreeLoader(logger: $logger);
 $indexer = new SourceIndexer($loader, $processor);

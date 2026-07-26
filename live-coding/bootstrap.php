@@ -2,20 +2,20 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-const LLM_MODEL = 'kimi-k2.5:cloud';
-const EMBEDDING_MODEL = 'BAAI/bge-base-en-v1.5?task=feature-extraction';
-const RERANKER_MODEL = 'BAAI/bge-reranker-v2-m3?task=text-ranking';
+// One provider for everything: Cohere covers the chat model, embeddings and reranking,
+// so the whole demo runs on a single COHERE_API_KEY (no local Ollama, no HuggingFace).
+const LLM_MODEL = 'command-a-03-2025';
+const EMBEDDING_MODEL = 'embed-english-v3.0';
+const RERANKER_MODEL = 'rerank-v3.5';
 
 use Psr\Log\AbstractLogger;
-use Symfony\AI\Platform\Bridge\HuggingFace\PlatformFactory as HuggingFacePlatformFactory;
-use Symfony\AI\Platform\Bridge\Ollama\PlatformFactory as OllamaPlatformFactory;
+use Symfony\AI\Platform\Bridge\Cohere\Factory as CohereFactory;
 use Symfony\AI\Store\Bridge\Sqlite\Store;
 use Symfony\Component\HttpClient\HttpClient;
 
-$ollamaPlatform = OllamaPlatformFactory::create('http://127.0.0.1:11434', httpClient: HttpClient::create());
-$huggingFacePlatform = HuggingFacePlatformFactory::create(
-    $_SERVER['HUGGINGFACE_API_KEY'] ?? '',
-    httpClient: HttpClient::create(['timeout' => 120]),
+$platform = CohereFactory::createPlatform(
+    $_SERVER['COHERE_API_KEY'] ?? '',
+    HttpClient::create(['timeout' => 120]),
 );
 
 $logger = new class extends AbstractLogger {
@@ -37,8 +37,7 @@ $store = Store::fromPdo($pdo, 'symfony_docs');
 $store->setup();
 
 return [
-    $ollamaPlatform,
-    $huggingFacePlatform,
+    $platform,
     $store,
     $logger,
 ];
