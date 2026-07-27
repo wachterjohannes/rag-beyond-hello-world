@@ -10,10 +10,11 @@ use Symfony\AI\Store\Document\Vectorizer;
 use Symfony\AI\Store\Indexer\DocumentProcessor;
 use Symfony\AI\Store\Indexer\SourceIndexer;
 
-// The RST loader splits on section length, which cuts long code blocks into fragments whose
-// "section" is a stray brace or two. Those chunks carry no retrievable meaning but happily
-// land in the top 5 and end up in the LLM's context. Filters run before embedding, so
-// dropping them here also saves the embedding calls.
+// RST has no explicit heading syntax: a line counts as a heading when the next line is a row
+// of punctuation at least as long. Inside a long code block that happens by accident, so the
+// loader cuts it into fragments headed by a stray brace or two. Those chunks carry no
+// retrievable meaning but happily land in the top 5 and end up in the LLM's context. Filters
+// run before embedding, so dropping them here also saves the embedding calls.
 $junkFilter = new class implements FilterInterface {
     private const MIN_LENGTH = 80;
 

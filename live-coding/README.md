@@ -26,9 +26,10 @@ prefer that instead.
 
 The indexer clones the Symfony docs repo for each version, embeds all pages using Cohere's `embed-english-v3.0`, and stores them in a local SQLite database.
 
-It also applies a filter that drops unusable chunks before embedding. The RST loader splits on
-section length, which slices long code blocks into fragments whose heading is a stray `}` or a
-Twig line like `Welcome {{ email.toName }}!`. A noticeable share of chunks is that kind of
+It also applies a filter that drops unusable chunks before embedding. The RST loader recognises a
+heading by its shape, a line followed by a row of punctuation, and inside a long code block that
+pattern shows up by accident, so a stray `}` or a Twig line like `Welcome {{ email.toName }}!`
+becomes the heading of its own fragment. A noticeable share of chunks is that kind of
 noise, and they otherwise reach the top 5 and end up in the LLM's context. Filters run before
 vectorization, so this saves the embedding calls too.
 
