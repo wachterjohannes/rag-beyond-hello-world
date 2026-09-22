@@ -2,10 +2,10 @@
     "require": {
         "php": ">=8.2",
         "ext-pdo": "*",
-        "symfony/ai-platform": "^0.12",
-        "symfony/ai-cohere-platform": "^0.12",
-        "symfony/ai-store": "^0.12",
-        "symfony/ai-sqlite-store": "^0.12",
+        "symfony/ai-platform": "^0.13",
+        "symfony/ai-cohere-platform": "^0.13",
+        "symfony/ai-store": "^0.13",
+        "symfony/ai-sqlite-store": "^0.13",
         "symfony/event-dispatcher": "^8.0",
         "symfony/http-client": "^8.0",
         "symfony/dotenv": "^8.1"

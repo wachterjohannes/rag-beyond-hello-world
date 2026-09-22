@@ -118,6 +118,6 @@ sets of vectors are subtly misaligned.
 
 `index.php` gets this for free, because `search_document` is the bridge's default. Queries do
 not: `Retriever::createQuery()` calls `$vectorizer->vectorize($query)` without options
-(`symfony/ai-store` v0.12.0), so the mode cannot be passed per call. The steps therefore wrap
+(`symfony/ai-store` v0.12.0 and v0.13.0), so the mode cannot be passed per call. The steps therefore wrap
 the vectorizer in `forQueries()` (see `helpers.php`), which pins `search_query` for the query
 side.

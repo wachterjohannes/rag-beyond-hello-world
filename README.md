@@ -42,7 +42,7 @@ to demonstrate. Step 04 brings the rewriter back, where the reranker can clean u
 
 ## Status
 
-> **Note:** Hybrid retrieval (step 03) uses Reciprocal Rank Fusion in the SQLite store, added in [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) (merged 2026-04-08). It ships in the pinned `symfony/ai ^0.12`, so no extra setup is needed.
+> **Note:** Hybrid retrieval (step 03) uses Reciprocal Rank Fusion in the SQLite store, added in [symfony/ai#1787](https://github.com/symfony/ai/pull/1787) (merged 2026-04-08). It ships in the pinned `symfony/ai ^0.13`, so no extra setup is needed.
 
 > **Note:** Cohere embeds documents and search queries in different modes, and `Retriever` currently
 > calls the vectorizer without options, so the query mode cannot be passed per call. The steps work

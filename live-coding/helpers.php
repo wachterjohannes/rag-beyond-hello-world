@@ -62,7 +62,7 @@ function vectorOnly(StoreInterface $store): StoreInterface
  * different modes so that short questions land next to the longer passages that answer them.
  * `index.php` embeds documents and gets the right mode for free, because `search_document` is
  * the bridge's default. Queries do not: `Retriever::createQuery()` calls
- * `$vectorizer->vectorize($query)` with no options (symfony/ai-store v0.12.0), so there is no
+ * `$vectorizer->vectorize($query)` with no options (symfony/ai-store v0.12.0 and v0.13.0), so there is no
  * way to pass the mode per call, and the query would be embedded as if it were a document.
  *
  * Pinning the mode on the vectorizer itself is the way around that. Explicit options still win,
