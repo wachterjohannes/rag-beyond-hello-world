@@ -8,6 +8,7 @@ use Symfony\AI\Platform\Bridge\Cohere\InputType;
 use Symfony\AI\Platform\Vector\Vector;
 use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
 use Symfony\AI\Store\Document\VectorDocument;
+use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\Document\VectorizerInterface;
 use Symfony\AI\Store\Query\HybridQuery;
 use Symfony\AI\Store\Query\QueryInterface;
@@ -28,7 +29,7 @@ function vectorOnly(StoreInterface $store): StoreInterface
         {
         }
 
-        public function add(VectorDocument|array $documents): void
+        public function add(VectorDocumentInterface|array $documents): void
         {
             $this->inner->add($documents);
         }
@@ -51,6 +52,11 @@ function vectorOnly(StoreInterface $store): StoreInterface
         public function supports(string $queryClass): bool
         {
             return HybridQuery::class !== $queryClass && $this->inner->supports($queryClass);
+        }
+
+        public function count(): int
+        {
+            return $this->inner->count();
         }
     };
 }
