@@ -6,7 +6,7 @@
 
 use Symfony\AI\Platform\Bridge\Cohere\InputType;
 use Symfony\AI\Platform\Vector\Vector;
-use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
+use Symfony\AI\Store\Document\DocumentInterface;
 use Symfony\AI\Store\Document\VectorDocument;
 use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\Document\VectorizerInterface;
@@ -81,7 +81,7 @@ function forQueries(VectorizerInterface $vectorizer): VectorizerInterface
         {
         }
 
-        public function vectorize(string|\Stringable|EmbeddableDocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
+        public function vectorize(string|\Stringable|DocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
         {
             return $this->inner->vectorize($values, $options + ['input_type' => InputType::SearchQuery]);
         }

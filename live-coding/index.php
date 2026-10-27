@@ -2,7 +2,7 @@
 
 [$platform, $store, $logger] = require __DIR__ . '/bootstrap.php';
 
-use Symfony\AI\Store\Document\EmbeddableDocumentInterface;
+use Symfony\AI\Store\Document\DocumentInterface;
 use Symfony\AI\Store\Document\FilterInterface;
 use Symfony\AI\Store\Document\Loader\RstToctreeLoader;
 use Symfony\AI\Store\Document\TransformerInterface;
